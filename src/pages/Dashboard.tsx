@@ -25,7 +25,7 @@ interface DashboardStats {
 export default function Dashboard() {
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const { user, profile, signOut, isLoading: authLoading } = useAuth();
+  const { user, profile, userRole, signOut, isLoading: authLoading } = useAuth();
   const [stats, setStats] = useState<DashboardStats>({
     streak: 0,
     quranPagesThisWeek: 0,
@@ -39,6 +39,9 @@ export default function Dashboard() {
       navigate("/auth");
     }
   }, [user, authLoading, navigate]);
+
+  // Show parent dashboard link for parents
+  const isParent = userRole === "parent" || userRole === "admin";
 
   useEffect(() => {
     if (user) {
@@ -328,6 +331,15 @@ export default function Dashboard() {
           >
             {t("viewHistory")}
           </Button>
+          {isParent && (
+            <Button
+              onClick={() => navigate("/parent")}
+              variant="outline"
+              className="w-full h-12 rounded-2xl border-primary/30 text-primary hover:bg-primary/10 transition-all duration-200"
+            >
+              Veli Paneline Git
+            </Button>
+          )}
         </div>
       </div>
 
