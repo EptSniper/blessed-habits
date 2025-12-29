@@ -14,16 +14,250 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      child_profiles: {
+        Row: {
+          created_at: string
+          grade_age: string | null
+          group_class: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          grade_age?: string | null
+          group_class?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          grade_age?: string | null
+          group_class?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      daily_logs: {
+        Row: {
+          book_pages: number
+          book_title: string | null
+          child_id: string
+          created_at: string
+          dhikr_alhamdulillah: number
+          dhikr_allahu_akbar: number
+          dhikr_other_count: number | null
+          dhikr_other_label: string | null
+          dhikr_salawat: number
+          dhikr_subhan_allah: number
+          edited_by_admin: boolean
+          edited_by_user_id: string | null
+          good_deed: string | null
+          id: string
+          jumuah: boolean
+          log_date: string
+          memorization_count: number | null
+          memorization_details: string | null
+          notes: string | null
+          prayer_asr_farz: boolean
+          prayer_asr_on_time: boolean | null
+          prayer_asr_sunnah: boolean
+          prayer_dhuhr_farz: boolean
+          prayer_dhuhr_on_time: boolean | null
+          prayer_dhuhr_sunnah: boolean
+          prayer_fajr_farz: boolean
+          prayer_fajr_on_time: boolean | null
+          prayer_fajr_sunnah: boolean
+          prayer_isha_farz: boolean
+          prayer_isha_on_time: boolean | null
+          prayer_isha_sunnah: boolean
+          prayer_maghrib_farz: boolean
+          prayer_maghrib_on_time: boolean | null
+          prayer_maghrib_sunnah: boolean
+          quran_ayah_range: string | null
+          quran_notes: string | null
+          quran_pages: number
+          quran_surah: string | null
+          review_details: string | null
+          updated_at: string
+          witr: boolean
+        }
+        Insert: {
+          book_pages?: number
+          book_title?: string | null
+          child_id: string
+          created_at?: string
+          dhikr_alhamdulillah?: number
+          dhikr_allahu_akbar?: number
+          dhikr_other_count?: number | null
+          dhikr_other_label?: string | null
+          dhikr_salawat?: number
+          dhikr_subhan_allah?: number
+          edited_by_admin?: boolean
+          edited_by_user_id?: string | null
+          good_deed?: string | null
+          id?: string
+          jumuah?: boolean
+          log_date: string
+          memorization_count?: number | null
+          memorization_details?: string | null
+          notes?: string | null
+          prayer_asr_farz?: boolean
+          prayer_asr_on_time?: boolean | null
+          prayer_asr_sunnah?: boolean
+          prayer_dhuhr_farz?: boolean
+          prayer_dhuhr_on_time?: boolean | null
+          prayer_dhuhr_sunnah?: boolean
+          prayer_fajr_farz?: boolean
+          prayer_fajr_on_time?: boolean | null
+          prayer_fajr_sunnah?: boolean
+          prayer_isha_farz?: boolean
+          prayer_isha_on_time?: boolean | null
+          prayer_isha_sunnah?: boolean
+          prayer_maghrib_farz?: boolean
+          prayer_maghrib_on_time?: boolean | null
+          prayer_maghrib_sunnah?: boolean
+          quran_ayah_range?: string | null
+          quran_notes?: string | null
+          quran_pages?: number
+          quran_surah?: string | null
+          review_details?: string | null
+          updated_at?: string
+          witr?: boolean
+        }
+        Update: {
+          book_pages?: number
+          book_title?: string | null
+          child_id?: string
+          created_at?: string
+          dhikr_alhamdulillah?: number
+          dhikr_allahu_akbar?: number
+          dhikr_other_count?: number | null
+          dhikr_other_label?: string | null
+          dhikr_salawat?: number
+          dhikr_subhan_allah?: number
+          edited_by_admin?: boolean
+          edited_by_user_id?: string | null
+          good_deed?: string | null
+          id?: string
+          jumuah?: boolean
+          log_date?: string
+          memorization_count?: number | null
+          memorization_details?: string | null
+          notes?: string | null
+          prayer_asr_farz?: boolean
+          prayer_asr_on_time?: boolean | null
+          prayer_asr_sunnah?: boolean
+          prayer_dhuhr_farz?: boolean
+          prayer_dhuhr_on_time?: boolean | null
+          prayer_dhuhr_sunnah?: boolean
+          prayer_fajr_farz?: boolean
+          prayer_fajr_on_time?: boolean | null
+          prayer_fajr_sunnah?: boolean
+          prayer_isha_farz?: boolean
+          prayer_isha_on_time?: boolean | null
+          prayer_isha_sunnah?: boolean
+          prayer_maghrib_farz?: boolean
+          prayer_maghrib_on_time?: boolean | null
+          prayer_maghrib_sunnah?: boolean
+          quran_ayah_range?: string | null
+          quran_notes?: string | null
+          quran_pages?: number
+          quran_surah?: string | null
+          review_details?: string | null
+          updated_at?: string
+          witr?: boolean
+        }
+        Relationships: []
+      }
+      parent_child_links: {
+        Row: {
+          child_id: string
+          created_at: string
+          id: string
+          parent_id: string
+        }
+        Insert: {
+          child_id: string
+          created_at?: string
+          id?: string
+          parent_id: string
+        }
+        Update: {
+          child_id?: string
+          created_at?: string
+          id?: string
+          parent_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          first_name: string
+          id: string
+          last_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          first_name: string
+          id?: string
+          last_name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          first_name?: string
+          id?: string
+          last_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_role: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "child" | "parent" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +384,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["child", "parent", "admin"],
+    },
   },
 } as const

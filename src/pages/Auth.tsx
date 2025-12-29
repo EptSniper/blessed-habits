@@ -1,29 +1,95 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Eye, EyeOff, User, Lock } from "lucide-react";
+import { Eye, EyeOff, User, Lock, Mail, UserCircle } from "lucide-react";
 import { AppBackground } from "@/components/ui/AppBackground";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
+import { toast } from "@/hooks/use-toast";
 
-export default function Login() {
+export default function Auth() {
   const navigate = useNavigate();
   const { language, setLanguage, t } = useLanguage();
+  const { signIn, signUp } = useAuth();
+  
+  const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    // Simulate login - will be replaced with real auth
-    setTimeout(() => {
+
+    try {
+      if (isLogin) {
+        const { error } = await signIn(email, password);
+        if (error) {
+          if (error.message.includes("Invalid login credentials")) {
+            toast({
+              title: "Giriş Başarısız",
+              description: "E-posta veya şifre yanlış. Lütfen tekrar deneyin.",
+              variant: "destructive",
+            });
+          } else {
+            toast({
+              title: "Hata",
+              description: error.message,
+              variant: "destructive",
+            });
+          }
+        } else {
+          navigate("/dashboard");
+        }
+      } else {
+        if (!firstName || !lastName) {
+          toast({
+            title: "Eksik Bilgi",
+            description: "Lütfen ad ve soyad alanlarını doldurun.",
+            variant: "destructive",
+          });
+          setIsLoading(false);
+          return;
+        }
+
+        const { error } = await signUp(email, password, firstName, lastName);
+        if (error) {
+          if (error.message.includes("already registered")) {
+            toast({
+              title: "Hesap Mevcut",
+              description: "Bu e-posta adresi zaten kayıtlı. Giriş yapmayı deneyin.",
+              variant: "destructive",
+            });
+          } else {
+            toast({
+              title: "Kayıt Başarısız",
+              description: error.message,
+              variant: "destructive",
+            });
+          }
+        } else {
+          toast({
+            title: "Kayıt Başarılı!",
+            description: "Hesabınız oluşturuldu. Şimdi giriş yapabilirsiniz.",
+          });
+          navigate("/dashboard");
+        }
+      }
+    } catch (error) {
+      console.error("Auth error:", error);
+      toast({
+        title: "Hata",
+        description: "Bir hata oluştu. Lütfen tekrar deneyin.",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-      navigate("/dashboard");
-    }, 800);
+    }
   };
 
   return (
@@ -58,7 +124,7 @@ export default function Login() {
         </div>
 
         {/* Header */}
-        <div className="mt-12 text-center animate-fade-in stagger-1">
+        <div className="mt-8 text-center animate-fade-in stagger-1">
           {/* Logo */}
           <div className="w-20 h-20 mx-auto rounded-full gradient-primary flex items-center justify-center shadow-glow mb-6">
             <svg viewBox="0 0 48 48" className="w-10 h-10 text-primary-foreground">
@@ -70,20 +136,48 @@ export default function Login() {
             </svg>
           </div>
           <h1 className="text-2xl font-bold text-foreground">TCC İslami Çetele</h1>
-          <p className="mt-2 text-muted-foreground">{t("welcomeBack")}</p>
+          <p className="mt-2 text-muted-foreground">
+            {isLogin ? t("welcomeBack") : "Yeni hesap oluştur"}
+          </p>
         </div>
 
-        {/* Login Form */}
-        <form onSubmit={handleLogin} className="mt-10 space-y-4 animate-fade-in stagger-2">
+        {/* Auth Form */}
+        <form onSubmit={handleSubmit} className="mt-8 space-y-4 animate-fade-in stagger-2">
           <div className="bg-card rounded-2xl p-6 border border-border/50 card-shadow space-y-4">
-            {/* Username */}
+            {/* Name fields for signup */}
+            {!isLogin && (
+              <>
+                <div className="relative">
+                  <UserCircle className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <Input
+                    type="text"
+                    placeholder="Ad"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    className="pl-12 h-14 bg-input border-border/50 rounded-xl text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+                <div className="relative">
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <Input
+                    type="text"
+                    placeholder="Soyad"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    className="pl-12 h-14 bg-input border-border/50 rounded-xl text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+              </>
+            )}
+
+            {/* Email */}
             <div className="relative">
-              <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <Input
-                type="text"
-                placeholder={t("username")}
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                type="email"
+                placeholder="E-posta"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="pl-12 h-14 bg-input border-border/50 rounded-xl text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:ring-2 focus:ring-primary/20"
               />
             </div>
@@ -108,7 +202,7 @@ export default function Login() {
             </div>
           </div>
 
-          {/* Sign In Button */}
+          {/* Submit Button */}
           <Button
             type="submit"
             disabled={isLoading}
@@ -116,19 +210,21 @@ export default function Login() {
           >
             {isLoading ? (
               <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-            ) : (
+            ) : isLogin ? (
               t("signIn")
+            ) : (
+              t("signUp")
             )}
           </Button>
 
-          {/* Links */}
-          <div className="flex items-center justify-center gap-4 text-sm">
-            <button type="button" className="text-muted-foreground hover:text-primary transition-colors">
-              {t("forgotPassword")}
-            </button>
-            <span className="text-border">•</span>
-            <button type="button" className="text-muted-foreground hover:text-primary transition-colors">
-              {t("signUp")}
+          {/* Toggle Login/Signup */}
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={() => setIsLogin(!isLogin)}
+              className="text-sm text-muted-foreground hover:text-primary transition-colors"
+            >
+              {isLogin ? "Hesabınız yok mu? Kayıt olun" : "Zaten hesabınız var mı? Giriş yapın"}
             </button>
           </div>
         </form>
