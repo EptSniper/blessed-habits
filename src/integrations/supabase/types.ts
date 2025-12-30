@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      child_activation_codes: {
+        Row: {
+          child_user_id: string | null
+          code: string
+          created_at: string
+          created_by: string | null
+          expires_at: string
+          id: string
+          used_at: string | null
+        }
+        Insert: {
+          child_user_id?: string | null
+          code: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string
+          id?: string
+          used_at?: string | null
+        }
+        Update: {
+          child_user_id?: string | null
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string
+          id?: string
+          used_at?: string | null
+        }
+        Relationships: []
+      }
       child_profiles: {
         Row: {
           created_at: string
@@ -191,6 +221,36 @@ export type Database = {
         }
         Relationships: []
       }
+      parent_link_requests: {
+        Row: {
+          child_code: string | null
+          created_at: string
+          id: string
+          parent_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+        }
+        Insert: {
+          child_code?: string | null
+          created_at?: string
+          id?: string
+          parent_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+        }
+        Update: {
+          child_code?: string | null
+          created_at?: string
+          id?: string
+          parent_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -198,6 +258,7 @@ export type Database = {
           first_name: string
           id: string
           last_name: string
+          status: string
           updated_at: string
           user_id: string
         }
@@ -207,6 +268,7 @@ export type Database = {
           first_name: string
           id?: string
           last_name: string
+          status?: string
           updated_at?: string
           user_id: string
         }
@@ -216,6 +278,7 @@ export type Database = {
           first_name?: string
           id?: string
           last_name?: string
+          status?: string
           updated_at?: string
           user_id?: string
         }
@@ -244,6 +307,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_child_code: { Args: never; Returns: string }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]

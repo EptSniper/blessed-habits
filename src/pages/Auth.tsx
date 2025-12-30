@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Eye, EyeOff, User, Lock, Mail, UserCircle } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
+import { Eye, EyeOff, Lock, Mail, User as UserIcon, Users, Shield } from "lucide-react";
 import { AppBackground } from "@/components/ui/AppBackground";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,76 +9,76 @@ import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 
+type LoginRole = "child" | "parent" | "admin";
+
+const roleConfig = {
+  child: {
+    icon: UserIcon,
+    label: "Çocuk",
+    emoji: "👦",
+    helperText: "Öğretmeninizden aldığınız kullanıcı adını kullanın.",
+    helperTextEn: "Use the username from your teacher.",
+    color: "text-primary",
+    bgColor: "bg-primary/10",
+    borderColor: "border-primary/30",
+  },
+  parent: {
+    icon: Users,
+    label: "Ebeveyn",
+    emoji: "👨‍👩‍👧",
+    helperText: "Çocuğunuzun ilerlemesini görüntülemek için giriş yapın.",
+    helperTextEn: "Log in to view your child's progress.",
+    color: "text-accent",
+    bgColor: "bg-accent/10",
+    borderColor: "border-accent/30",
+  },
+  admin: {
+    icon: Shield,
+    label: "Yönetici",
+    emoji: "🛡️",
+    helperText: "Sadece TCC yetkilileri için.",
+    helperTextEn: "For TCC staff only.",
+    color: "text-destructive",
+    bgColor: "bg-destructive/10",
+    borderColor: "border-destructive/30",
+  },
+};
+
 export default function Auth() {
   const navigate = useNavigate();
   const { language, setLanguage, t } = useLanguage();
-  const { signIn, signUp } = useAuth();
-  
-  const [isLogin, setIsLogin] = useState(true);
+  const { signIn } = useAuth();
+
+  const [selectedRole, setSelectedRole] = useState<LoginRole>("parent");
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  const currentRoleConfig = roleConfig[selectedRole];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      if (isLogin) {
-        const { error } = await signIn(email, password);
-        if (error) {
-          if (error.message.includes("Invalid login credentials")) {
-            toast({
-              title: "Giriş Başarısız",
-              description: "E-posta veya şifre yanlış. Lütfen tekrar deneyin.",
-              variant: "destructive",
-            });
-          } else {
-            toast({
-              title: "Hata",
-              description: error.message,
-              variant: "destructive",
-            });
-          }
-        } else {
-          navigate("/dashboard");
-        }
-      } else {
-        if (!firstName || !lastName) {
+      const { error } = await signIn(email, password);
+      if (error) {
+        if (error.message.includes("Invalid login credentials")) {
           toast({
-            title: "Eksik Bilgi",
-            description: "Lütfen ad ve soyad alanlarını doldurun.",
+            title: "Giriş Başarısız",
+            description: "E-posta veya şifre yanlış. Lütfen tekrar deneyin.",
             variant: "destructive",
           });
-          setIsLoading(false);
-          return;
-        }
-
-        const { error } = await signUp(email, password, firstName, lastName);
-        if (error) {
-          if (error.message.includes("already registered")) {
-            toast({
-              title: "Hesap Mevcut",
-              description: "Bu e-posta adresi zaten kayıtlı. Giriş yapmayı deneyin.",
-              variant: "destructive",
-            });
-          } else {
-            toast({
-              title: "Kayıt Başarısız",
-              description: error.message,
-              variant: "destructive",
-            });
-          }
         } else {
           toast({
-            title: "Kayıt Başarılı!",
-            description: "Hesabınız oluşturuldu. Şimdi giriş yapabilirsiniz.",
+            title: "Hata",
+            description: error.message,
+            variant: "destructive",
           });
-          navigate("/dashboard");
         }
+      } else {
+        navigate("/dashboard");
       }
     } catch (error) {
       console.error("Auth error:", error);
@@ -124,7 +124,7 @@ export default function Auth() {
         </div>
 
         {/* Header */}
-        <div className="mt-8 text-center animate-fade-in stagger-1">
+        <div className="mt-6 text-center animate-fade-in stagger-1">
           {/* Logo */}
           <div className="w-20 h-20 mx-auto rounded-full gradient-primary flex items-center justify-center shadow-glow mb-6">
             <svg viewBox="0 0 48 48" className="w-10 h-10 text-primary-foreground">
@@ -136,40 +136,44 @@ export default function Auth() {
             </svg>
           </div>
           <h1 className="text-2xl font-bold text-foreground">TCC İslami Çetele</h1>
-          <p className="mt-2 text-muted-foreground">
-            {isLogin ? t("welcomeBack") : "Yeni hesap oluştur"}
-          </p>
+          <p className="mt-2 text-muted-foreground">{t("welcomeBack")}</p>
         </div>
 
-        {/* Auth Form */}
-        <form onSubmit={handleSubmit} className="mt-8 space-y-4 animate-fade-in stagger-2">
-          <div className="bg-card rounded-2xl p-6 border border-border/50 card-shadow space-y-4">
-            {/* Name fields for signup */}
-            {!isLogin && (
-              <>
-                <div className="relative">
-                  <UserCircle className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                  <Input
-                    type="text"
-                    placeholder="Ad"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    className="pl-12 h-14 bg-input border-border/50 rounded-xl text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:ring-2 focus:ring-primary/20"
-                  />
-                </div>
-                <div className="relative">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                  <Input
-                    type="text"
-                    placeholder="Soyad"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    className="pl-12 h-14 bg-input border-border/50 rounded-xl text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:ring-2 focus:ring-primary/20"
-                  />
-                </div>
-              </>
-            )}
+        {/* Role Selector Chips */}
+        <div className="mt-6 flex justify-center gap-2 animate-fade-in stagger-2">
+          {(Object.keys(roleConfig) as LoginRole[]).map((role) => {
+            const config = roleConfig[role];
+            const isSelected = selectedRole === role;
+            return (
+              <button
+                key={role}
+                type="button"
+                onClick={() => setSelectedRole(role)}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-200 border",
+                  isSelected
+                    ? `${config.bgColor} ${config.color} ${config.borderColor} shadow-sm`
+                    : "bg-card border-border/50 text-muted-foreground hover:border-border hover:text-foreground"
+                )}
+              >
+                <span>{config.emoji}</span>
+                <span>{config.label}</span>
+              </button>
+            );
+          })}
+        </div>
 
+        {/* Helper Text */}
+        <p className={cn(
+          "mt-4 text-center text-sm transition-all duration-200",
+          currentRoleConfig.color
+        )}>
+          {language === "tr" ? currentRoleConfig.helperText : currentRoleConfig.helperTextEn}
+        </p>
+
+        {/* Auth Form */}
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4 animate-fade-in stagger-3">
+          <div className="bg-card rounded-2xl p-6 border border-border/50 card-shadow space-y-4">
             {/* Email */}
             <div className="relative">
               <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -210,27 +214,38 @@ export default function Auth() {
           >
             {isLoading ? (
               <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-            ) : isLogin ? (
-              t("signIn")
             ) : (
-              t("signUp")
+              t("signIn")
             )}
           </Button>
 
-          {/* Toggle Login/Signup */}
-          <div className="text-center">
-            <button
-              type="button"
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-sm text-muted-foreground hover:text-primary transition-colors"
-            >
-              {isLogin ? "Hesabınız yok mu? Kayıt olun" : "Zaten hesabınız var mı? Giriş yapın"}
-            </button>
-          </div>
+          {/* Sign Up Link - Only visible for Parent role */}
+          {selectedRole === "parent" && (
+            <div className="text-center space-y-2">
+              <Link
+                to="/parent-signup"
+                className="text-sm text-accent hover:text-accent/80 transition-colors font-medium"
+              >
+                Hesabınız yok mu? Ebeveyn olarak kayıt olun
+              </Link>
+            </div>
+          )}
+
+          {/* Child Activation Link - Only visible for Child role */}
+          {selectedRole === "child" && (
+            <div className="text-center">
+              <Link
+                to="/child-activation"
+                className="text-sm text-primary hover:text-primary/80 transition-colors font-medium"
+              >
+                Hesabınızı aktifleştirin
+              </Link>
+            </div>
+          )}
         </form>
 
         {/* Bismillah */}
-        <div className="mt-auto pt-12 text-center animate-fade-in stagger-3">
+        <div className="mt-auto pt-8 text-center animate-fade-in stagger-4">
           <p className="font-arabic text-lg text-accent/80">{t("bismillahArabic")}</p>
           <p className="mt-1 text-xs text-muted-foreground">{t("bismillah")}</p>
         </div>
