@@ -12,6 +12,9 @@ import Dashboard from "./pages/Dashboard";
 import DailyLog from "./pages/DailyLog";
 import History from "./pages/History";
 import ParentDashboard from "./pages/ParentDashboard";
+import ParentSignUp from "./pages/ParentSignUp";
+import ChildActivation from "./pages/ChildActivation";
+import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +36,9 @@ const App = () => (
               <Route path="/daily-log" element={<DailyLog />} />
               <Route path="/history" element={<History />} />
               <Route path="/parent" element={<ParentDashboard />} />
+              <Route path="/parent-signup" element={<ParentSignUp />} />
+              <Route path="/child-activation" element={<ChildActivation />} />
+              <Route path="/admin" element={<AdminDashboard />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
