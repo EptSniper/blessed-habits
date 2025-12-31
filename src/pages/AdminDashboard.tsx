@@ -17,7 +17,7 @@ import {
 import { AppBackground } from "@/components/ui/AppBackground";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useAuth } from "@/hooks/useAuth";
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -69,7 +69,12 @@ interface ActivationCode {
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const { userRole, isLoading: authLoading } = useAuth();
+  
+  // Check for token-based admin auth
+  const storedRole = localStorage.getItem("user_role");
+  const adminEmail = localStorage.getItem("admin_email");
+  const adminName = localStorage.getItem("admin_name");
+  const isAdminAuth = storedRole === "admin" && adminEmail;
 
   const [activeTab, setActiveTab] = useState<"requests" | "children" | "codes">("requests");
   const [pendingRequests, setPendingRequests] = useState<PendingParent[]>([]);
@@ -90,14 +95,12 @@ export default function AdminDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    if (!authLoading && userRole !== "admin") {
-      navigate("/dashboard");
+    if (!isAdminAuth) {
+      navigate("/auth");
       return;
     }
-    if (!authLoading && userRole === "admin") {
-      fetchData();
-    }
-  }, [authLoading, userRole]);
+    fetchData();
+  }, [isAdminAuth]);
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -369,7 +372,7 @@ export default function AdminDashboard() {
       child.email?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  if (authLoading || isLoading) {
+  if (isLoading) {
     return (
       <AppBackground>
         <div className="min-h-screen flex items-center justify-center">
