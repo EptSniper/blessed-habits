@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_tokens: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          email: string
+          id: string
+          is_active: boolean | null
+          last_used_at: string | null
+          name: string | null
+          token_hash: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          email: string
+          id?: string
+          is_active?: boolean | null
+          last_used_at?: string | null
+          name?: string | null
+          token_hash: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          email?: string
+          id?: string
+          is_active?: boolean | null
+          last_used_at?: string | null
+          name?: string | null
+          token_hash?: string
+        }
+        Relationships: []
+      }
       child_activation_codes: {
         Row: {
           child_user_id: string | null
@@ -41,6 +74,39 @@ export type Database = {
           expires_at?: string
           id?: string
           used_at?: string | null
+        }
+        Relationships: []
+      }
+      child_auth: {
+        Row: {
+          created_at: string
+          failed_attempts: number | null
+          id: string
+          locked_until: string | null
+          pin_hash: string
+          pin_updated_at: string | null
+          user_id: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          failed_attempts?: number | null
+          id?: string
+          locked_until?: string | null
+          pin_hash: string
+          pin_updated_at?: string | null
+          user_id: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          failed_attempts?: number | null
+          id?: string
+          locked_until?: string | null
+          pin_hash?: string
+          pin_updated_at?: string | null
+          user_id?: string
+          username?: string
         }
         Relationships: []
       }
@@ -284,6 +350,36 @@ export type Database = {
         }
         Relationships: []
       }
+      temp_login_codes: {
+        Row: {
+          child_user_id: string
+          code: string
+          created_at: string
+          created_by: string | null
+          expires_at: string
+          id: string
+          used: boolean | null
+        }
+        Insert: {
+          child_user_id: string
+          code: string
+          created_at?: string
+          created_by?: string | null
+          expires_at: string
+          id?: string
+          used?: boolean | null
+        }
+        Update: {
+          child_user_id?: string
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string
+          id?: string
+          used?: boolean | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -318,6 +414,24 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      hash_pin: { Args: { pin: string }; Returns: string }
+      verify_admin_token: {
+        Args: { p_token: string }
+        Returns: {
+          admin_email: string
+          admin_name: string
+          error_message: string
+          is_valid: boolean
+        }[]
+      }
+      verify_child_login: {
+        Args: { p_pin: string; p_username: string }
+        Returns: {
+          error_message: string
+          is_valid: boolean
+          user_id: string
+        }[]
       }
     }
     Enums: {

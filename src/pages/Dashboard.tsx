@@ -26,6 +26,13 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const { user, profile, userRole, signOut, isLoading: authLoading } = useAuth();
+  
+  // Check for child login via localStorage (PIN-based auth)
+  const childUserId = localStorage.getItem("child_user_id");
+  const storedRole = localStorage.getItem("user_role");
+  const isChildLogin = storedRole === "child" && childUserId;
+  
+  const [childProfile, setChildProfile] = useState<{ first_name: string; last_name: string } | null>(null);
   const [stats, setStats] = useState<DashboardStats>({
     streak: 0,
     quranPagesThisWeek: 0,
@@ -34,24 +41,58 @@ export default function Dashboard() {
   });
   const [isLoading, setIsLoading] = useState(true);
 
+  // Redirect logic
   useEffect(() => {
-    if (!authLoading && !user) {
+    // If neither Supabase auth nor child PIN auth, redirect to login
+    if (!authLoading && !user && !isChildLogin) {
       navigate("/auth");
+      return;
     }
-  }, [user, authLoading, navigate]);
+    
+    // If user is parent/admin via Supabase auth, redirect to appropriate dashboard
+    if (!authLoading && user && userRole) {
+      if (userRole === "parent") {
+        navigate("/parent");
+        return;
+      }
+      if (userRole === "admin") {
+        navigate("/admin");
+        return;
+      }
+    }
+  }, [user, authLoading, userRole, isChildLogin, navigate]);
 
-  // Show parent dashboard link for parents
-  const isParent = userRole === "parent" || userRole === "admin";
+  // Fetch child profile for PIN-based auth
+  useEffect(() => {
+    if (isChildLogin && childUserId) {
+      fetchChildProfile(childUserId);
+    }
+  }, [isChildLogin, childUserId]);
+
+  const fetchChildProfile = async (userId: string) => {
+    try {
+      const { data } = await supabase
+        .from("profiles")
+        .select("first_name, last_name")
+        .eq("user_id", userId)
+        .maybeSingle();
+      
+      if (data) {
+        setChildProfile(data);
+      }
+    } catch (error) {
+      console.error("Error fetching child profile:", error);
+    }
+  };
 
   useEffect(() => {
-    if (user) {
-      fetchStats();
+    const userId = isChildLogin ? childUserId : user?.id;
+    if (userId) {
+      fetchStats(userId);
     }
-  }, [user]);
+  }, [user, childUserId, isChildLogin]);
 
-  const fetchStats = async () => {
-    if (!user) return;
-
+  const fetchStats = async (userId: string) => {
     try {
       const today = new Date().toISOString().split("T")[0];
       const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
@@ -60,7 +101,7 @@ export default function Dashboard() {
       const { data: todayData } = await supabase
         .from("daily_logs")
         .select("*")
-        .eq("child_id", user.id)
+        .eq("child_id", userId)
         .eq("log_date", today)
         .maybeSingle();
 
@@ -68,7 +109,7 @@ export default function Dashboard() {
       const { data: weekLogs } = await supabase
         .from("daily_logs")
         .select("*")
-        .eq("child_id", user.id)
+        .eq("child_id", userId)
         .gte("log_date", weekAgo)
         .lte("log_date", today);
 
@@ -99,7 +140,7 @@ export default function Dashboard() {
       const { data: allLogs } = await supabase
         .from("daily_logs")
         .select("log_date")
-        .eq("child_id", user.id)
+        .eq("child_id", userId)
         .order("log_date", { ascending: false })
         .limit(30);
 
@@ -115,7 +156,7 @@ export default function Dashboard() {
           
           if (dates.includes(checkDateStr)) {
             streak++;
-          } else if (i > 0) { // Allow today to not be logged yet
+          } else if (i > 0) {
             break;
           }
         }
@@ -158,7 +199,17 @@ export default function Dashboard() {
   };
 
   const handleSignOut = async () => {
-    await signOut();
+    // Clear localStorage for child/admin
+    localStorage.removeItem("child_user_id");
+    localStorage.removeItem("user_role");
+    localStorage.removeItem("admin_email");
+    localStorage.removeItem("admin_name");
+    
+    // Sign out from Supabase if authenticated
+    if (user) {
+      await signOut();
+    }
+    
     navigate("/auth");
   };
 
@@ -179,7 +230,10 @@ export default function Dashboard() {
     month: "long",
   });
 
-  const displayName = profile?.first_name || user?.email?.split("@")[0] || "Kullanıcı";
+  // Get display name from child profile (PIN auth) or regular profile (Supabase auth)
+  const displayName = isChildLogin 
+    ? (childProfile?.first_name || "Çocuk")
+    : (profile?.first_name || user?.email?.split("@")[0] || "Kullanıcı");
 
   const todayChecklist = [
     {
@@ -331,15 +385,6 @@ export default function Dashboard() {
           >
             {t("viewHistory")}
           </Button>
-          {isParent && (
-            <Button
-              onClick={() => navigate("/parent")}
-              variant="outline"
-              className="w-full h-12 rounded-2xl border-primary/30 text-primary hover:bg-primary/10 transition-all duration-200"
-            >
-              Veli Paneline Git
-            </Button>
-          )}
         </div>
       </div>
 
