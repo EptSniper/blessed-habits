@@ -1,15 +1,16 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Users, BookOpen, Star, LogOut, ChevronDown, ChevronUp, Calendar } from "lucide-react";
+import { Users, BookOpen, Star, LogOut, ChevronDown, ChevronUp, Calendar, Plus } from "lucide-react";
 import { AppBackground } from "@/components/ui/AppBackground";
 import { ProgressRing } from "@/components/ui/ProgressRing";
 import { MetricTile } from "@/components/ui/MetricTile";
 import { Button } from "@/components/ui/button";
+import { CreateChildModal } from "@/components/CreateChildModal";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
-import { format, startOfWeek, endOfWeek, eachDayOfInterval, subDays } from "date-fns";
+import { format, startOfWeek, endOfWeek, eachDayOfInterval } from "date-fns";
 import { tr } from "date-fns/locale";
 
 interface ChildWithStats {
@@ -40,6 +41,7 @@ export default function ParentDashboard() {
   const [children, setChildren] = useState<ChildWithStats[]>([]);
   const [expandedChild, setExpandedChild] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   useEffect(() => {
     if (!authLoading) {
@@ -253,15 +255,29 @@ export default function ParentDashboard() {
 
         {/* Children List */}
         <div className="mt-6 px-6 space-y-4">
-          <h2 className="text-lg font-semibold text-foreground">Çocuklarım</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-foreground">Çocuklarım</h2>
+            <Button
+              onClick={() => setShowCreateModal(true)}
+              size="sm"
+              className="h-9 rounded-xl gradient-primary text-primary-foreground shadow-glow gap-1.5"
+            >
+              <Plus className="w-4 h-4" />
+              Çocuk Ekle
+            </Button>
+          </div>
 
           {children.length === 0 ? (
             <div className="bg-card rounded-2xl p-6 border border-border/50 card-shadow text-center">
               <Users className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-              <p className="text-muted-foreground">Henüz bağlı çocuk bulunmuyor.</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                Admin tarafından çocuk bağlantısı yapılmalıdır.
-              </p>
+              <p className="text-muted-foreground">Henüz çocuk hesabı oluşturmadınız.</p>
+              <Button
+                onClick={() => setShowCreateModal(true)}
+                className="mt-4 h-10 rounded-xl gradient-primary text-primary-foreground shadow-glow gap-1.5"
+              >
+                <Plus className="w-4 h-4" />
+                İlk Çocuk Hesabını Oluştur
+              </Button>
             </div>
           ) : (
             children.map((child, index) => (
@@ -435,6 +451,15 @@ export default function ParentDashboard() {
               Çocuk Paneline Git
             </Button>
           </div>
+        )}
+        {/* Create Child Modal */}
+        {user && (
+          <CreateChildModal
+            isOpen={showCreateModal}
+            onClose={() => setShowCreateModal(false)}
+            onSuccess={() => fetchLinkedChildren()}
+            parentId={user.id}
+          />
         )}
       </div>
     </AppBackground>

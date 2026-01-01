@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useEffect } from "react";
 import { Delete } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -10,6 +10,8 @@ interface PinKeypadProps {
 }
 
 export function PinKeypad({ value, onChange, maxLength = 6, disabled = false }: PinKeypadProps) {
+  const hiddenInputRef = useRef<HTMLInputElement>(null);
+
   const handleKeyPress = (key: string) => {
     if (disabled) return;
     if (value.length < maxLength) {
@@ -27,12 +29,46 @@ export function PinKeypad({ value, onChange, maxLength = 6, disabled = false }: 
     onChange("");
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (disabled) return;
+    const newValue = e.target.value.replace(/\D/g, "").slice(0, maxLength);
+    onChange(newValue);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Backspace") {
+      handleDelete();
+    }
+  };
+
+  const focusInput = () => {
+    hiddenInputRef.current?.focus();
+  };
+
   const keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "clear", "0", "delete"];
 
   return (
     <div className="space-y-4">
-      {/* PIN Display */}
-      <div className="flex justify-center gap-2">
+      {/* Hidden input for direct typing */}
+      <input
+        ref={hiddenInputRef}
+        type="tel"
+        inputMode="numeric"
+        pattern="[0-9]*"
+        value={value}
+        onChange={handleInputChange}
+        onKeyDown={handleKeyDown}
+        disabled={disabled}
+        className="absolute opacity-0 pointer-events-none"
+        autoComplete="off"
+      />
+
+      {/* PIN Display - clickable to focus input */}
+      <button
+        type="button"
+        onClick={focusInput}
+        className="flex justify-center gap-2 w-full focus:outline-none"
+      >
         {Array.from({ length: maxLength }).map((_, i) => (
           <div
             key={i}
@@ -44,7 +80,7 @@ export function PinKeypad({ value, onChange, maxLength = 6, disabled = false }: 
             )}
           />
         ))}
-      </div>
+      </button>
 
       {/* Keypad */}
       <div className="grid grid-cols-3 gap-3">
